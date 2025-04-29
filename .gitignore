@@ -35,6 +35,10 @@ logs/
 # Docker
 .env
 docker-compose.override.yml
+minio_data/
+consumer1_data/
+consumer2_data/
+csv_files/
 
 # OS specific
 .DS_Store

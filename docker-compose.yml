@@ -63,6 +63,24 @@ services:
     networks:
       - kafka-network
 
+  minio:
+    image: bitnami/minio:latest
+    container_name: minio
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=adminadmin!!
+      - MINIO_DEFAULT_BUCKETS=default
+      - MINIO_SERVER_HOST=0.0.0.0
+      - MINIO_BROWSER_REDIRECT_URL=http://localhost:9001
+      - MINIO_CONSOLE_ADDRESS=:9001
+    networks:
+      - kafka-network
+
   kafka-producer:
     build:
       context: ./kafka-producer
@@ -84,13 +102,20 @@ services:
     depends_on:
       - broker1
       - broker2
+      - minio
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:29092,broker2:29093
       KAFKA_TOPIC: topic1
       SPRING_KAFKA_CONSUMER_GROUP_ID: consumer-group-1
       SERVER_PORT: 8082
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: adminadmin!!
+      MINIO_BUCKET: default
     networks:
       - kafka-network
+    volumes:
+      - ./consumer1_data:/csv_files
 
   kafka-consumer2:
     build:
@@ -99,14 +124,25 @@ services:
     depends_on:
       - broker1
       - broker2
+      - minio
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: broker1:29092,broker2:29093
       KAFKA_TOPIC: topic2
       SPRING_KAFKA_CONSUMER_GROUP_ID: consumer-group-2
       SERVER_PORT: 8083
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: admin
+      MINIO_SECRET_KEY: adminadmin!!
+      MINIO_BUCKET: default
     networks:
       - kafka-network
+    volumes:
+      - ./consumer2_data:/csv_files
 
 networks:
   kafka-network:
     driver: bridge
+
+volumes:
+  minio_data:
+    driver: local
